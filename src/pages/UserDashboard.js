@@ -26,7 +26,7 @@ function UserDashboard() {
 
   const fetchMessages = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/messages', {
+      const res = await axios.get('https://skill-connect-server.glitch.me//api/messages', {
         params: { category: user.status }
       });
       setMessages(res.data);

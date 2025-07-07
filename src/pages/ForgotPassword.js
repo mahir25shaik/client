@@ -16,7 +16,7 @@ function ForgotPassword() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/forgot-password', { email, newPassword });
+      const res = await axios.post('https://skill-connect-server.glitch.me//api/forgot-password', { email, newPassword });
       if (res.data.success) {
         setMessage('Password updated successfully!');
       } else {

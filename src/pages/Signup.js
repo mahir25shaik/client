@@ -20,7 +20,7 @@ function Signup() {
     e.preventDefault();
     try {
       console.log('Sending signup data:', formData);
-      const res = await axios.post('http://localhost:5000/api/signup', formData);
+      const res = await axios.post('https://skill-connect-server.glitch.me//api/signup', formData);
       if (res.data.success) {
         alert('Signup successful!');
         navigate('/login');

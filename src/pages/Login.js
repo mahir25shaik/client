@@ -17,7 +17,7 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/login', { email, password });
+      const res = await axios.post('https://skill-connect-server.glitch.me//api/login', { email, password });
       if (res.data.success) {
         navigate('/user-dashboard', { state: { user: res.data.user } });
       } else {
