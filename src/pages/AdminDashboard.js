@@ -7,8 +7,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { motion } from 'framer-motion';
 import Footer from '../components/Footer';
-import '../styles/components.css';
+import '../styles/admin-dashboard.css';
 
 function AdminDashboard() {
   const [users, setUsers] = useState([]);
@@ -16,6 +17,10 @@ function AdminDashboard() {
   const [messageStats, setMessageStats] = useState({ totalMessages: 0, categoryCount: {}, messages: [] });
   const [messages, setMessages] = useState({ employed: '', graduated: '', pursuing: '' });
   const [filter, setFilter] = useState({ city: '', state: '', country: '' });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchedUser, setSearchedUser] = useState(null);
+  const [searchError, setSearchError] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -63,7 +68,7 @@ function AdminDashboard() {
       });
       alert(`Message sent to ${category} users`);
       setMessages({ ...messages, [category]: '' });
-      fetchMessageStats(); // Refresh message stats after sending
+      fetchMessageStats();
     } catch (err) {
       console.error(err);
       alert('Failed to send message');
@@ -72,6 +77,33 @@ function AdminDashboard() {
 
   const handleFilterChange = (e) => {
     setFilter({ ...filter, [e.target.name]: e.target.value });
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      setSearchError('Please enter an email to search');
+      setSearchedUser(null);
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchError('');
+    try {
+      const email = searchQuery.trim().toLowerCase();
+      const res = await axios.get(`https://server-res-five.vercel.app/api/user-resume?email=${encodeURIComponent(email)}`);
+      if (res.data.success && res.data.resumeData) {
+        setSearchedUser(res.data);
+      } else {
+        setSearchedUser(null);
+        setSearchError('No resume found for this user');
+      }
+    } catch (err) {
+      console.error('Error fetching resume:', err.response?.data || err.message);
+      setSearchedUser(null);
+      setSearchError('Error searching for user resume or no data found');
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleLogout = () => {
@@ -99,6 +131,11 @@ function AdminDashboard() {
     (filter.state === '' || user.state === filter.state) &&
     (filter.country === '' || user.country === filter.country)
   );
+
+  // Sort messages by timestamp descending (recent first)
+  const sortMessagesByRecent = (messages) => {
+    return messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  };
 
   return (
     <div className="admin-dashboard">
@@ -159,8 +196,8 @@ function AdminDashboard() {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={messageData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
+                <XAxis dataKey="name" label={{ value: "Category", position: "insideBottom", offset: -5 }} />
+                <YAxis label={{ value: "Count", angle: -90, position: "insideLeft" }} />
                 <Tooltip />
                 <Bar dataKey="value" fill="#82ca9d" />
               </BarChart>
@@ -173,10 +210,21 @@ function AdminDashboard() {
           <div className="chart-container">
             <h4>Qualification by Passout Year & Status</h4>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={Object.entries(userStats.qualificationByYearStatus).map(([key, value]) => ({ name: key, count: value }))}>
+              <BarChart data={Object.entries(userStats.qualificationByYearStatus).map(([key, value]) => ({ name: key.split('-').join(' '), count: value }))} margin={{ top: 20, right: 30, left: 20, bottom: 100 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" angle={45} textAnchor="end" interval={0} height={100} />
-                <YAxis />
+                <XAxis 
+                  dataKey="name" 
+                  angle={-45} 
+                  textAnchor="end" 
+                  interval={0} 
+                  height={100} 
+                  tick={{ fontSize: 12 }} // Smaller font size
+                  label={{ value: "Qualification - Year - Status", position: "insideBottom", offset: -90, fontSize: 14 }} 
+                />
+                <YAxis 
+                  label={{ value: "Count", angle: -90, position: "insideLeft", offset: 10, fontSize: 14 }} 
+                  tick={{ fontSize: 12 }} 
+                />
                 <Tooltip />
                 <Bar dataKey="count" fill="#8884d8" />
               </BarChart>
@@ -186,10 +234,21 @@ function AdminDashboard() {
           <div className="chart-container">
             <h4>Branch by Qualification, Year & Status</h4>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={Object.entries(userStats.branchByQualYearStatus).map(([key, value]) => ({ name: key, count: value }))}>
+              <BarChart data={Object.entries(userStats.branchByQualYearStatus).map(([key, value]) => ({ name: key.split('-').join(' '), count: value }))} margin={{ top: 20, right: 30, left: 20, bottom: 100 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" angle={45} textAnchor="end" interval={0} height={100} />
-                <YAxis />
+                <XAxis 
+                  dataKey="name" 
+                  angle={-45} 
+                  textAnchor="end" 
+                  interval={0} 
+                  height={100} 
+                  tick={{ fontSize: 12 }} // Smaller font size
+                  label={{ value: "Branch - Qual - Year - Status", position: "insideBottom", offset: -90, fontSize: 14 }} 
+                />
+                <YAxis 
+                  label={{ value: "Count", angle: -90, position: "insideLeft", offset: 10, fontSize: 14 }} 
+                  tick={{ fontSize: 12 }} 
+                />
                 <Tooltip />
                 <Bar dataKey="count" fill="#ff7300" />
               </BarChart>
@@ -202,7 +261,12 @@ function AdminDashboard() {
       <div className="message-section">
         <h3>Send Messages to Users</h3>
         <div className="message-boxes">
-          <div className="message-box">
+          <motion.div
+            className="message-box"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
             <h4>Employed Users</h4>
             <textarea
               value={messages.employed}
@@ -211,8 +275,13 @@ function AdminDashboard() {
               rows={6}
             />
             <button onClick={() => handleMessageSend('employed')}>Send</button>
-          </div>
-          <div className="message-box">
+          </motion.div>
+          <motion.div
+            className="message-box"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
             <h4>Graduated Users</h4>
             <textarea
               value={messages.graduated}
@@ -221,8 +290,13 @@ function AdminDashboard() {
               rows={6}
             />
             <button onClick={() => handleMessageSend('graduated')}>Send</button>
-          </div>
-          <div className="message-box">
+          </motion.div>
+          <motion.div
+            className="message-box"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+          >
             <h4>Pursuing Users</h4>
             <textarea
               value={messages.pursuing}
@@ -231,7 +305,7 @@ function AdminDashboard() {
               rows={6}
             />
             <button onClick={() => handleMessageSend('pursuing')}>Send</button>
-          </div>
+          </motion.div>
         </div>
       </div>
 
@@ -242,12 +316,11 @@ function AdminDashboard() {
           <div className="message-history">
             <h4>Employed</h4>
             {messageStats.messages.filter(m => m.category === 'employed').length > 0 ? (
-              messageStats.messages
-                .filter(m => m.category === 'employed')
+              sortMessagesByRecent([...messageStats.messages.filter(m => m.category === 'employed')])
                 .map((msg, index) => (
                   <div key={index} className="message-history-item">
-                    <p style={{ whiteSpace: 'pre-line' }}>{msg.message}</p>
-                    <p><small>Sent on: {new Date(msg.timestamp).toLocaleString()}</small></p>
+                    <p style={{ whiteSpace: 'pre-line', textAlign: 'left' }}>{msg.message}</p>
+                    <p><small style={{ textAlign: 'left', display: 'block' }}>Sent on: {new Date(msg.timestamp).toLocaleString()}</small></p>
                   </div>
                 ))
             ) : (
@@ -257,12 +330,11 @@ function AdminDashboard() {
           <div className="message-history">
             <h4>Graduated</h4>
             {messageStats.messages.filter(m => m.category === 'graduated').length > 0 ? (
-              messageStats.messages
-                .filter(m => m.category === 'graduated')
+              sortMessagesByRecent([...messageStats.messages.filter(m => m.category === 'graduated')])
                 .map((msg, index) => (
                   <div key={index} className="message-history-item">
-                    <p style={{ whiteSpace: 'pre-line' }}>{msg.message}</p>
-                    <p><small>Sent on: {new Date(msg.timestamp).toLocaleString()}</small></p>
+                    <p style={{ whiteSpace: 'pre-line', textAlign: 'left' }}>{msg.message}</p>
+                    <p><small style={{ textAlign: 'left', display: 'block' }}>Sent on: {new Date(msg.timestamp).toLocaleString()}</small></p>
                   </div>
                 ))
             ) : (
@@ -272,12 +344,11 @@ function AdminDashboard() {
           <div className="message-history">
             <h4>Pursuing</h4>
             {messageStats.messages.filter(m => m.category === 'pursuing').length > 0 ? (
-              messageStats.messages
-                .filter(m => m.category === 'pursuing')
+              sortMessagesByRecent([...messageStats.messages.filter(m => m.category === 'pursuing')])
                 .map((msg, index) => (
                   <div key={index} className="message-history-item">
-                    <p style={{ whiteSpace: 'pre-line' }}>{msg.message}</p>
-                    <p><small>Sent on: {new Date(msg.timestamp).toLocaleString()}</small></p>
+                    <p style={{ whiteSpace: 'pre-line', textAlign: 'left' }}>{msg.message}</p>
+                    <p><small style={{ textAlign: 'left', display: 'block' }}>Sent on: {new Date(msg.timestamp).toLocaleString()}</small></p>
                   </div>
                 ))
             ) : (
@@ -287,7 +358,71 @@ function AdminDashboard() {
         </div>
       </div>
 
-      <Footer />
+      {/* Search User Resume Section */}
+      <div className="search-section">
+        <h3>Search User Resume/Docs</h3>
+        <div className="search-container-wrapper">
+          <div className="user-table-container">
+            <h4>Users</h4>
+            {users.length > 0 ? (
+              <div className="user-table-wrapper" style={{ maxHeight: users.length > 5 ? '200px' : 'auto', overflowY: users.length > 5 ? 'auto' : 'visible' }}>
+                <table className="user-table">
+                  <thead>
+                    <tr>
+                      <th>Email ID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.map((user, index) => (
+                      <tr
+                        key={index}
+                        className="user-table-row"
+                        onClick={() => {
+                          setSearchQuery(user.email);
+                          handleSearch();
+                        }}
+                      >
+                        <td>{user.email}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p>No users found.</p>
+            )}
+          </div>
+          <div className="search-container">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setSearchedUser(null);
+                setSearchError('');
+              }}
+              placeholder="Enter user email (e.g., test12@gmail.com)"
+              className="search-input"
+            />
+            <button onClick={handleSearch} disabled={isSearching}>
+              {isSearching ? 'Searching...' : 'Search'}
+            </button>
+          </div>
+        </div>
+        {searchError && (
+          <p className="error-message" style={{ color: 'red', marginTop: '10px' }}>
+            {searchError}
+          </p>
+        )}
+        {searchedUser && (
+          <div className="document-display">
+            <h4>Selected User: {searchedUser.email}</h4>
+            <p style={{ textAlign: 'left', whiteSpace: 'pre-line' }}>{searchedUser.resumeData}</p>
+          </div>
+        )}
+      </div>
+
+      
     </div>
   );
 }

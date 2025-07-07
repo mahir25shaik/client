@@ -6,8 +6,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 import Footer from '../components/Footer';
-import '../styles/components.css';
+import '../styles/login.css';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -30,29 +31,47 @@ function Login() {
   };
 
   return (
-    <div className="form-container">
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          required
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
-      <p>
-        <a href="/forgot-password">Forgot Password?</a>
-      </p>
-      <Footer />
+    <div className="login-container">
+      <motion.div
+        className="login-form"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h2>Login to Your Account</h2>
+        <form onSubmit={handleSubmit}>
+          <motion.input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            required
+            whileFocus={{ scale: 1.02, borderColor: '#3498db' }}
+            transition={{ duration: 0.2 }}
+          />
+          <motion.input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            required
+            whileFocus={{ scale: 1.02, borderColor: '#3498db' }}
+            transition={{ duration: 0.2 }}
+          />
+          <motion.button
+            type="submit"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+          >
+            Login
+          </motion.button>
+        </form>
+        <p>
+          <a href="/forgot-password">Forgot Password?</a>
+        </p>
+      </motion.div>
+      
     </div>
   );
 }

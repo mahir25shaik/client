@@ -5,8 +5,9 @@
 // src/pages/AdminLogin.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import Footer from '../components/Footer';
-import '../styles/components.css';
+import '../styles/admin-login.css';
 
 function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -28,26 +29,45 @@ function AdminLogin() {
   };
 
   return (
-    <div className="form-container">
-      <h2>Admin Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Admin Email"
-          required
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Admin Password"
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
-      <Footer />
+    <div className="admin-login-container">
+      <motion.div
+        className="admin-login-form"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h2>Admin Login</h2>
+        <p className="warning-text">This is for admin access only. Unauthorized access is prohibited.</p>
+        <form onSubmit={handleSubmit}>
+          <motion.input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Admin Email"
+            required
+            whileFocus={{ scale: 1.02, borderColor: '#e67e22' }}
+            transition={{ duration: 0.2 }}
+          />
+          <motion.input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Admin Password"
+            required
+            whileFocus={{ scale: 1.02, borderColor: '#e67e22' }}
+            transition={{ duration: 0.2 }}
+          />
+          <motion.button
+            type="submit"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+          >
+            Login
+          </motion.button>
+        </form>
+      </motion.div>
+      
     </div>
   );
 }
