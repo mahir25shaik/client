@@ -26,7 +26,7 @@ function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('https://skill-connect-server.glitch.me//api/users');
+      const res = await axios.get('https://server-res-five.vercel.app/api/users');
       setUsers(res.data);
     } catch (err) {
       console.error(err);
@@ -35,7 +35,7 @@ function AdminDashboard() {
 
   const fetchUserStats = async () => {
     try {
-      const res = await axios.get('https://skill-connect-server.glitch.me//api/user-stats');
+      const res = await axios.get('https://server-res-five.vercel.app/api/user-stats');
       if (res.data.success) {
         setUserStats(res.data);
       }
@@ -46,7 +46,7 @@ function AdminDashboard() {
 
   const fetchMessageStats = async () => {
     try {
-      const res = await axios.get('https://skill-connect-server.glitch.me//api/message-stats');
+      const res = await axios.get('https://server-res-five.vercel.app/api/message-stats');
       if (res.data.success) {
         setMessageStats(res.data);
       }
@@ -57,7 +57,7 @@ function AdminDashboard() {
 
   const handleMessageSend = async (category) => {
     try {
-      await axios.post('https://skill-connect-server.glitch.me//api/send-message', {
+      await axios.post('https://server-res-five.vercel.app/api/send-message', {
         category,
         message: messages[category]
       });

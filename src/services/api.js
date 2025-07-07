@@ -6,7 +6,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'https://skill-connect-server.glitch.me/',
+  baseURL: 'https://server-res-five.vercel.app/',
   headers: {
     'Content-Type': 'application/json',
   },

@@ -26,7 +26,7 @@ function UserDashboard() {
 
   const fetchMessages = async () => {
     try {
-      const res = await axios.get('https://skill-connect-server.glitch.me//api/messages', {
+      const res = await axios.get('https://server-res-five.vercel.app/api/messages', {
         params: { category: user.status }
       });
       setMessages(res.data);
